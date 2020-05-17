@@ -1,0 +1,6 @@
+{
+	"CidrParam": {
+		"Description": "The CIDR block of the selected VPC. For example 10.0.0.0/16. This will be used in Security Groups to allow traffic only within this network.",
+        "Type": "String"
+	}
+}

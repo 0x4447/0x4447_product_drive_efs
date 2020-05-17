@@ -1,0 +1,6 @@
+{
+	"VPCParam": {
+		"Description": "The VPC ID.",
+		"Type": "AWS::EC2::VPC::Id"
+	}
+}

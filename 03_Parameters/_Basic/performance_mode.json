@@ -1,0 +1,11 @@
+{
+	"PerformanceModeParam": {
+		"Description": "Select the performance of the drive that you need.",
+		"Type": "String",
+		"Default": "generalPurpose",
+		"AllowedValues": [
+			"generalPurpose", 
+			"maxIO"
+		]
+	}
+}

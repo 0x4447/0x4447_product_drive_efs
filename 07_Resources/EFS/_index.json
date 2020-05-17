@@ -1,0 +1,26 @@
+{
+	"EFS": {
+		"Type": "AWS::EFS::FileSystem",
+		"Properties": {
+			"Encrypted": true,
+            "PerformanceMode": { "Ref": "PerformanceModeParam"},
+            "LifecyclePolicies": { "Fn::If" : [ "TransitionToIACondition", { "Ref": "AWS::NoValue" }, [{ "TransitionToIA" :{ "Ref": "TransitionToIAParam" } }] ]},
+            "ThroughputMode": { "Ref": "ThroughputModeParam"},
+            "ProvisionedThroughputInMibps": { "Fn::If" : [ "ProvisionedThroughputInMibpsCondition", { "Ref": "AWS::NoValue" }, { "Ref": "ProvisionedThroughputInMibpsParam" } ]},
+			"FileSystemTags": [
+				{
+					"Key" : "Name",
+					"Value" : { "Ref": "UniqueIdentifierParam"}
+				},
+				{
+					"Key" : "Source",
+					"Value" : "0x4447 LLC"
+				},
+				{
+					"Key" : "Info",
+					"Value" : "https://0x4447.com"
+				}
+			]
+		}
+	}
+}

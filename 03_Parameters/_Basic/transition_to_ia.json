@@ -1,0 +1,15 @@
+{
+	"TransitionToIAParam": {
+		"Description": "Select after how many days unacessed files will transitions to the IA storage class.",
+		"Type": "String",
+		"Default": "AFTER_7_DAYS",
+		"AllowedValues": [
+			"AFTER_7_DAYS", 
+			"AFTER_14_DAYS", 
+			"AFTER_30_DAYS", 
+			"AFTER_60_DAYS",			
+			"AFTER_90_DAYS",
+			"NEVER"
+		]
+	}
+}

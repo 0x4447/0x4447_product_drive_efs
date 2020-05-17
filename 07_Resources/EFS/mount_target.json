@@ -1,0 +1,10 @@
+{
+    "EFSMountTarget": {
+        "Type": "AWS::EFS::MountTarget",
+        "Properties": {
+          "FileSystemId": { "Ref": "EFS" },
+          "SubnetId": { "Ref": "SubnetIdParam" },
+          "SecurityGroups": [ { "Ref": "EFSSecurityGroup" } ]        
+        }
+    }
+}

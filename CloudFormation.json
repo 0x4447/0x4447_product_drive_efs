@@ -1,0 +1,216 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "Describe me!",
+	"Metadata": {
+		"AWS::CloudFormation::Interface": {
+			"ParameterGroups": [
+				{
+					"Label": {
+						"default": "Basic"
+					},
+					"Parameters": [
+						"CodePipelineArtifactsParam",
+						"GitHubTokenParam",
+						"StageParam"
+					]
+				}
+			],
+			"ParameterLabels": {
+				"CodePipelineArtifactsParam": {
+					"default": "CodePipeline Artifacts Bucket"
+				},
+				"GitHubTokenParam": {
+					"default": "GitHub Token"
+				},
+				"StageParam": {
+					"default": "Stage"
+				}
+			}
+		}
+	},
+	"Parameters": {
+		"ProvisionedThroughputInMibpsParam": {
+			"Description": "The throughput, measured in MiB/s,",
+			"Type": "Number",
+			"Default": "0",
+			"MaxValue": 1024,
+			"MinValue": 0
+		},
+		"PerformanceModeParam": {
+			"Description": "Select the performance of the drive that you need.",
+			"Type": "String",
+			"Default": "generalPurpose",
+			"AllowedValues": [
+				"generalPurpose",
+				"maxIO"
+			]
+		},
+		"ThroughputModeParam": {
+			"Description": "The throughput mode for the file system to be created",
+			"Type": "String",
+			"Default": "bursting",
+			"AllowedValues": [
+				"bursting",
+				"provisioned"
+			]
+		},
+		"TransitionToIAParam": {
+			"Description": "Select after how many days unacessed files will transitions to the IA storage class.",
+			"Type": "String",
+			"Default": "AFTER_7_DAYS",
+			"AllowedValues": [
+				"AFTER_7_DAYS",
+				"AFTER_14_DAYS",
+				"AFTER_30_DAYS",
+				"AFTER_60_DAYS",
+				"AFTER_90_DAYS",
+				"NEVER"
+			]
+		},
+		"UniqueIdentifierParam": {
+			"Description": "Provide a unique name of this deployment. We are going to append to all AWS resources that require uniquenss.",
+			"Type": "String"
+		},
+		"CidrParam": {
+			"Description": "The CIDR block of the selected VPC. For example 10.0.0.0/16. This will be used in Security Groups to allow traffic only within this network.",
+			"Type": "String"
+		},
+		"SubnetIdParam": {
+			"Description": "The ID of a Private subnet where the EFS will be deployed in.",
+			"Type": "AWS::EC2::Subnet::Id"
+		},
+		"VPCParam": {
+			"Description": "The VPC ID.",
+			"Type": "AWS::EC2::VPC::Id"
+		}
+	},
+	"Conditions": {
+		"ProvisionedThroughputInMibpsCondition": {
+			"Fn::Equals": [
+				{
+					"Ref": "ProvisionedThroughputInMibpsParam"
+				},
+				"0"
+			]
+		},
+		"TransitionToIACondition": {
+			"Fn::Equals": [
+				{
+					"Ref": "TransitionToIAParam"
+				},
+				"NEVER"
+			]
+		}
+	},
+	"Resources": {
+		"EFS": {
+			"Type": "AWS::EFS::FileSystem",
+			"Properties": {
+				"Encrypted": true,
+				"PerformanceMode": {
+					"Ref": "PerformanceModeParam"
+				},
+				"LifecyclePolicies": {
+					"Fn::If": [
+						"TransitionToIACondition",
+						{
+							"Ref": "AWS::NoValue"
+						},
+						[
+							{
+								"TransitionToIA": {
+									"Ref": "TransitionToIAParam"
+								}
+							}
+						]
+					]
+				},
+				"ThroughputMode": {
+					"Ref": "ThroughputModeParam"
+				},
+				"ProvisionedThroughputInMibps": {
+					"Fn::If": [
+						"ProvisionedThroughputInMibpsCondition",
+						{
+							"Ref": "AWS::NoValue"
+						},
+						{
+							"Ref": "ProvisionedThroughputInMibpsParam"
+						}
+					]
+				},
+				"FileSystemTags": [
+					{
+						"Key": "Name",
+						"Value": {
+							"Ref": "UniqueIdentifierParam"
+						}
+					},
+					{
+						"Key": "Source",
+						"Value": "0x4447 LLC"
+					},
+					{
+						"Key": "Info",
+						"Value": "https://0x4447.com"
+					}
+				]
+			}
+		},
+		"EFSSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupName": {
+					"Fn::Sub": "0x4447_efs_${UniqueIdentifierParam}"
+				},
+				"GroupDescription": "This group allows the EFS to be mounted in the selected subnet.",
+				"VpcId": {
+					"Ref": "VPCParam"
+				},
+				"SecurityGroupEgress": [
+					{
+						"IpProtocol": "-1",
+						"FromPort": -1,
+						"ToPort": -1,
+						"CidrIp": "0.0.0.0/0"
+					}
+				],
+				"SecurityGroupIngress": [
+					{
+						"IpProtocol": "tcp",
+						"FromPort": 2049,
+						"ToPort": 2049,
+						"Description": "EFS",
+						"CidrIp": {
+							"Ref": "CidrParam"
+						}
+					}
+				],
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": {
+							"Fn::Sub": "0x4447_efs_${UniqueIdentifierParam}"
+						}
+					}
+				]
+			}
+		},
+		"EFSMountTarget": {
+			"Type": "AWS::EFS::MountTarget",
+			"Properties": {
+				"FileSystemId": {
+					"Ref": "EFS"
+				},
+				"SubnetId": {
+					"Ref": "SubnetIdParam"
+				},
+				"SecurityGroups": [
+					{
+						"Ref": "EFSSecurityGroup"
+					}
+				]
+			}
+		}
+	}
+}

@@ -1,0 +1,6 @@
+{
+	"SubnetIdParam": {
+		"Description": "The ID of a Private subnet where the EFS will be deployed in.",
+		"Type": "AWS::EC2::Subnet::Id"
+	}
+}

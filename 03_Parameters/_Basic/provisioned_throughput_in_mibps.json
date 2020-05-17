@@ -1,0 +1,9 @@
+{
+	"ProvisionedThroughputInMibpsParam": {
+		"Description": "The throughput, measured in MiB/s,",
+		"Type": "Number",
+		"Default": "0",
+		"MaxValue": 1024,
+		"MinValue": 0
+	}
+}

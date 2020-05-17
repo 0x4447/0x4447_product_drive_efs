@@ -1,0 +1,11 @@
+{
+	"ThroughputModeParam": {
+		"Description": "The throughput mode for the file system to be created",
+		"Type": "String",
+		"Default": "bursting",
+		"AllowedValues": [
+			"bursting", 
+			"provisioned"
+		]
+	}
+}

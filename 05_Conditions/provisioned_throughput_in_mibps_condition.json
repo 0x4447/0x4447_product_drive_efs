@@ -1,0 +1,3 @@
+{
+	"ProvisionedThroughputInMibpsCondition": { "Fn::Equals": [ {"Ref": "ProvisionedThroughputInMibpsParam"}, "0"] }
+}

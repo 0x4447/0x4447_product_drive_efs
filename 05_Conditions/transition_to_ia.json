@@ -1,0 +1,3 @@
+{
+	"TransitionToIACondition": { "Fn::Equals": [ {"Ref": "TransitionToIAParam"}, "NEVER"] }
+}
