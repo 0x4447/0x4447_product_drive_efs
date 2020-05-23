@@ -1,0 +1,7 @@
+{
+	"DaysParam": {
+		"Description": "After how many days the backup should expire.",
+		"Type": "Number",
+		"Default": 7
+	}
+}

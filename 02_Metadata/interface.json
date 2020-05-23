@@ -6,16 +6,49 @@
                         "default": "Basic"
                     },
                     "Parameters": [
-                        "CodePipelineArtifactsParam",
-                        "GitHubTokenParam",
-                        "StageParam"
+                        "UniqueIdentifierParam"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "VPC"
+                    },
+                    "Parameters": [
+                        "VPCParam",
+                        "SubnetIdParam",
+                        "CidrParam"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "EFS Drive"
+                    },
+                    "Parameters": [
+                        "PerformanceModeParam",
+                        "ProvisionedThroughputInMibpsParam",
+                        "ThroughputModeParam",
+                        "TransitionToIAParam"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Backup"
+                    },
+                    "Parameters": [
+                        "DaysParam"
                     ]
                 }
             ],
             "ParameterLabels": {
-                "CodePipelineArtifactsParam": { "default": "CodePipeline Artifacts Bucket" },
-                "GitHubTokenParam": { "default": "GitHub Token" },
-                "StageParam": { "default": "Stage" }
+                "UniqueIdentifierParam": { "default": "Unique Identifier" },
+                "VPCParam": { "default": "VPC" },
+                "SubnetIdParam": { "default": "Subnet" },
+                "CidrParam": { "default": "CIDR" },
+                "PerformanceModeParam": { "default": "Performance Mode" },
+                "ProvisionedThroughputInMibpsParam": { "default": "Provisioned Throughput In Mibps" },
+                "ThroughputModeParam": { "default": "Throughput Mode" },
+                "TransitionToIAParam": { "default": "Transition To IA" },
+                "DaysParam": { "default": "Retention Days" }
             }
         }
 }

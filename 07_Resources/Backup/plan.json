@@ -1,0 +1,30 @@
+{
+    "BackupPlan": {
+        "Type": "AWS::Backup::BackupPlan",
+        "Properties": {
+            "BackupPlan": {
+                "BackupPlanName": { "Ref": "UniqueIdentifierParam" },
+                "BackupPlanRule": [
+                    {
+                        "RuleName": { "Fn::Sub": "Daily Backups with ${DaysParam} Days retention" },
+                        "TargetBackupVault": { "Ref": "BackupVault" },
+                        "ScheduleExpression": "cron(0 5 ? * * *)",
+                        "Lifecycle": {
+                            "DeleteAfterDays" : { "Ref": "DaysParam" }
+                        },
+                        "RecoveryPointTags": {
+                            "Name": { "Ref": "UniqueIdentifierParam" },
+                            "Source": "0x4447 LLC",
+                            "Info": "https://0x4447.com"
+                        }
+                    }
+                ]
+            },
+            "BackupPlanTags": {
+                "Name": { "Ref": "UniqueIdentifierParam" },
+                "Source": "0x4447 LLC",
+                "Info": "https://0x4447.com"
+            }
+        }
+    }
+}

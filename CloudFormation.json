@@ -1,6 +1,6 @@
 {
 	"AWSTemplateFormatVersion": "2010-09-09",
-	"Description": "Describe me!",
+	"Description": "Deploys a EFS drive with all the secuirty in place, plus a backup system of 7 day retention.",
 	"Metadata": {
 		"AWS::CloudFormation::Interface": {
 			"ParameterGroups": [
@@ -9,32 +9,79 @@
 						"default": "Basic"
 					},
 					"Parameters": [
-						"CodePipelineArtifactsParam",
-						"GitHubTokenParam",
-						"StageParam"
+						"UniqueIdentifierParam"
+					]
+				},
+				{
+					"Label": {
+						"default": "VPC"
+					},
+					"Parameters": [
+						"VPCParam",
+						"SubnetIdParam",
+						"CidrParam"
+					]
+				},
+				{
+					"Label": {
+						"default": "EFS Drive"
+					},
+					"Parameters": [
+						"PerformanceModeParam",
+						"ProvisionedThroughputInMibpsParam",
+						"ThroughputModeParam",
+						"TransitionToIAParam"
+					]
+				},
+				{
+					"Label": {
+						"default": "Backup"
+					},
+					"Parameters": [
+						"DaysParam"
 					]
 				}
 			],
 			"ParameterLabels": {
-				"CodePipelineArtifactsParam": {
-					"default": "CodePipeline Artifacts Bucket"
+				"UniqueIdentifierParam": {
+					"default": "Unique Identifier"
 				},
-				"GitHubTokenParam": {
-					"default": "GitHub Token"
+				"VPCParam": {
+					"default": "VPC"
 				},
-				"StageParam": {
-					"default": "Stage"
+				"SubnetIdParam": {
+					"default": "Subnet"
+				},
+				"CidrParam": {
+					"default": "CIDR"
+				},
+				"PerformanceModeParam": {
+					"default": "Performance Mode"
+				},
+				"ProvisionedThroughputInMibpsParam": {
+					"default": "Provisioned Throughput In Mibps"
+				},
+				"ThroughputModeParam": {
+					"default": "Throughput Mode"
+				},
+				"TransitionToIAParam": {
+					"default": "Transition To IA"
+				},
+				"DaysParam": {
+					"default": "Retention Days"
 				}
 			}
 		}
 	},
 	"Parameters": {
-		"ProvisionedThroughputInMibpsParam": {
-			"Description": "The throughput, measured in MiB/s,",
+		"UniqueIdentifierParam": {
+			"Description": "Provide a unique name of this deployment. We are going to append to all AWS resources that require uniquenss.",
+			"Type": "String"
+		},
+		"DaysParam": {
+			"Description": "After how many days the backup should expire.",
 			"Type": "Number",
-			"Default": "0",
-			"MaxValue": 1024,
-			"MinValue": 0
+			"Default": 7
 		},
 		"PerformanceModeParam": {
 			"Description": "Select the performance of the drive that you need.",
@@ -54,6 +101,13 @@
 				"provisioned"
 			]
 		},
+		"ProvisionedThroughputInMibpsParam": {
+			"Description": "The throughput, measured in MiB/s,",
+			"Type": "Number",
+			"Default": "0",
+			"MaxValue": 1024,
+			"MinValue": 0
+		},
 		"TransitionToIAParam": {
 			"Description": "Select after how many days unacessed files will transitions to the IA storage class.",
 			"Type": "String",
@@ -67,14 +121,6 @@
 				"NEVER"
 			]
 		},
-		"UniqueIdentifierParam": {
-			"Description": "Provide a unique name of this deployment. We are going to append to all AWS resources that require uniquenss.",
-			"Type": "String"
-		},
-		"CidrParam": {
-			"Description": "The CIDR block of the selected VPC. For example 10.0.0.0/16. This will be used in Security Groups to allow traffic only within this network.",
-			"Type": "String"
-		},
 		"SubnetIdParam": {
 			"Description": "The ID of a Private subnet where the EFS will be deployed in.",
 			"Type": "AWS::EC2::Subnet::Id"
@@ -82,6 +128,10 @@
 		"VPCParam": {
 			"Description": "The VPC ID.",
 			"Type": "AWS::EC2::VPC::Id"
+		},
+		"CidrParam": {
+			"Description": "The CIDR block of the selected VPC. For example 10.0.0.0/16. This will be used in Security Groups to allow traffic only within this network.",
+			"Type": "String"
 		}
 	},
 	"Conditions": {
@@ -103,6 +153,84 @@
 		}
 	},
 	"Resources": {
+		"BackupVault": {
+			"Type": "AWS::Backup::BackupVault",
+			"Properties": {
+				"BackupVaultName": {
+					"Ref": "UniqueIdentifierParam"
+				},
+				"BackupVaultTags": {
+					"Name": {
+						"Ref": "UniqueIdentifierParam"
+					},
+					"Source": "0x4447 LLC",
+					"Info": "https://0x4447.com"
+				}
+			}
+		},
+		"BackupSelection": {
+			"Type": "AWS::Backup::BackupSelection",
+			"Properties": {
+				"BackupPlanId": {
+					"Ref": "BackupPlan"
+				},
+				"BackupSelection": {
+					"SelectionName": {
+						"Ref": "UniqueIdentifierParam"
+					},
+					"IamRoleArn": "arn:aws:iam::718280524074:role/service-role/AWSBackupDefaultServiceRole",
+					"ListOfTags": [
+						{
+							"ConditionType": "STRINGEQUALS",
+							"ConditionKey": "Name",
+							"ConditionValue": {
+								"Ref": "UniqueIdentifierParam"
+							}
+						}
+					]
+				}
+			}
+		},
+		"BackupPlan": {
+			"Type": "AWS::Backup::BackupPlan",
+			"Properties": {
+				"BackupPlan": {
+					"BackupPlanName": {
+						"Ref": "UniqueIdentifierParam"
+					},
+					"BackupPlanRule": [
+						{
+							"RuleName": {
+								"Fn::Sub": "Daily Backups with ${DaysParam} Days retention"
+							},
+							"TargetBackupVault": {
+								"Ref": "BackupVault"
+							},
+							"ScheduleExpression": "cron(0 5 ? * * *)",
+							"Lifecycle": {
+								"DeleteAfterDays": {
+									"Ref": "DaysParam"
+								}
+							},
+							"RecoveryPointTags": {
+								"Name": {
+									"Ref": "UniqueIdentifierParam"
+								},
+								"Source": "0x4447 LLC",
+								"Info": "https://0x4447.com"
+							}
+						}
+					]
+				},
+				"BackupPlanTags": {
+					"Name": {
+						"Ref": "UniqueIdentifierParam"
+					},
+					"Source": "0x4447 LLC",
+					"Info": "https://0x4447.com"
+				}
+			}
+		},
 		"EFS": {
 			"Type": "AWS::EFS::FileSystem",
 			"Properties": {
