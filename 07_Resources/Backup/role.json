@@ -15,8 +15,55 @@
 					}
 				]
 			},
-			"ManagedPolicyArns": [
-				"arn:aws:iam::aws:policy/aws-service-role/AWSBackupServiceLinkedRolePolicyForBackup"
+			"Policies": [
+				{
+					"PolicyName": "efs_backup",
+					"PolicyDocument": {
+						"Version": "2012-10-17",
+						"Statement": [
+							{
+                                "Action": [
+                                    "elasticfilesystem:Backup"
+                                ],
+                                "Resource": "arn:aws:elasticfilesystem:*:*:file-system/*",
+                                "Effect": "Allow"
+                            },
+                            {
+                                "Action": [
+                                    "tag:GetResources"
+                                ],
+                                "Resource": "*",
+                                "Effect": "Allow"
+                            },
+                            {
+                                "Effect": "Allow",
+                                "Action": [
+                                    "backup:DescribeBackupVault",
+                                    "backup:CopyIntoBackupVault"
+                                ],
+                                "Resource": "arn:aws:backup:*:*:backup-vault:*"
+                            }
+						]
+					}
+                },
+                {
+					"PolicyName": "efs_restore",
+					"PolicyDocument": {
+						"Version": "2012-10-17",
+						"Statement": [
+							{
+                                "Effect": "Allow",
+                                "Action": [
+                                    "elasticfilesystem:Restore",
+                                    "elasticfilesystem:CreateFilesystem",
+                                    "elasticfilesystem:DescribeFilesystems",
+                                    "elasticfilesystem:DeleteFilesystem"
+                                ],
+                                "Resource": "arn:aws:elasticfilesystem:*:*:file-system/*"
+                            }
+						]
+					}
+				}
 			]
 		}
 	}

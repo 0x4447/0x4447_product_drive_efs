@@ -5,7 +5,7 @@
             "BackupPlanId" : { "Ref": "BackupPlan" },
             "BackupSelection" : {
                 "SelectionName" : { "Ref": "UniqueIdentifierParam" },
-                "IamRoleArn" : { "Ref": "BackupRole" },
+                "IamRoleArn" : { "Fn::GetAtt" : ["BackupRole", "Arn"] },
                 "ListOfTags" : [{
                     "ConditionType" : "STRINGEQUALS",
                     "ConditionKey" : "Name",
