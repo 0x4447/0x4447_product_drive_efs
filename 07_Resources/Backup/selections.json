@@ -5,7 +5,7 @@
             "BackupPlanId" : { "Ref": "BackupPlan" },
             "BackupSelection" : {
                 "SelectionName" : { "Ref": "UniqueIdentifierParam" },
-                "IamRoleArn" : { "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/service-role/AWSBackupDefaultServiceRole" },
+                "IamRoleArn" : { "Ref": "BackupRole" },
                 "ListOfTags" : [{
                     "ConditionType" : "STRINGEQUALS",
                     "ConditionKey" : "Name",
