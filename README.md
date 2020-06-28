@@ -1,6 +1,6 @@
-# Title me
+# AWS EFS Drive with Backup
 
-Describe me
+A simple EFS deployment with support for AWS Backup out of the box.
 
 # DISCLAIMER!
 
